@@ -6,7 +6,4 @@ edition = "2018"
 links = "hello"
 build = "build.rs"
 
-[build-dependencies]
-cc = "1.0"
-
 [dependencies]
