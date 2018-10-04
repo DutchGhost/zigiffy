@@ -1,11 +1,11 @@
 #[link(name = "hello")]
-extern {
+extern "C" {
     fn printing(buf: *const u8, len: usize);
 }
 
 fn print<S: AsRef<str>>(s: S) {
     let s: &str = s.as_ref();
-    
+
     unsafe {
         printing(s.as_ptr(), s.len());
     }
@@ -16,4 +16,3 @@ fn main() {
 
     print(&s);
 }
-
