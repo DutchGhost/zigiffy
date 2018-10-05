@@ -12,7 +12,7 @@ fn main() {
     let zig_compiler = path.parent().unwrap().join("zig-0.3").join("zig.exe");
 
     let zig_compile = Command::new(zig_compiler.to_str().expect("Could not find zig compiler"))
-        .args(&["build-lib", "hello.zig"])
+        .args(&["build-lib", "--release-fast", "hello.zig"])
         .output()
         .expect("Could not compile zig library");
 
