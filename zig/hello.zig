@@ -14,71 +14,80 @@ fn itoa(comptime N: type, n: N, buff: []u8) void {
     comptime var UNROLL_MAX: usize = 4;
 
     var num = n;
-    var len = buff.len - 1;
+    var len = buff.len;
 
     var qs: [UNROLL_MAX]N = []N{0} ** UNROLL_MAX;
-    var rs: [UNROLL_MAX]u8 = []u8{0} ** UNROLL_MAX;
+    var partial_result: [UNROLL_MAX]u8 = []u8{0} ** UNROLL_MAX;
     
-    while(len >= 4): ({len -= 4; num = @divExact(num, 10000);}) {
+    while(len >= 4): ({len -= 4; num = @divTrunc(num, 10000);}) {
         
-        comptime var CURRENT: usize = 0;
+        comptime var CURRENT: usize = 3;
         
         comptime var DIV_CONST: N = 1;
         
-        inline while(CURRENT < UNROLL_MAX): ({CURRENT += 1; DIV_CONST *= 10;}) {
-            qs[CURRENT] = @divExact(num, DIV_CONST);
+        inline while(CURRENT != @maxValue(usize)): ({CURRENT -%= 1; DIV_CONST *= 10;}) {
+            qs[CURRENT] = @divTrunc(num, DIV_CONST);
 
         }
 
-        CURRENT = 0;
+        CURRENT = 3;
 
-        inline while(CURRENT < UNROLL_MAX): ({CURRENT += 1;}) {
-            rs[CURRENT] = @intCast(u8, @rem(qs[CURRENT], 10)) + 48;
+        inline while(CURRENT != @maxValue(usize)): ({CURRENT -%= 1;}) {
+            partial_result[CURRENT] = @intCast(u8, @rem(qs[CURRENT], 10)) + 48;
         }
 
-        @memcpy(buff[len - UNROLL_MAX..len].ptr, rs[0..].ptr, UNROLL_MAX);
+        var slice = buff[len - 4..len];
+        @memcpy(slice.ptr, &partial_result, UNROLL_MAX);
     }
 
+    len -= 1;
 
-    while(len != 0): ({len -= 1;}) {
+    while(len != @maxValue(usize)): ({len -%= 1;}) {
         var q: N = @divTrunc(num, 10);
-
-        var r: u8 = @intCast(u8, @rem(q, 10)) + 48;
+        
+        var r: u8 = @intCast(u8, @rem(num, 10)) + 48;
 
         buff[len] = r;
-
-        if (q == 0) {
-            return;
-        }
 
         num = q;
     }
 }
 
-export fn itoa_u64(n: i64, noalias buff: [*] u8, len: usize) void {
+export fn itoa_u64(n: u64, noalias buff: [*] u8, len: usize) void {
     var slice = buff[0..len];
 
-    itoa(i64, n, slice);
+    itoa(u64, n, slice);
 }
 
 test "test" {
     const assert = @import("std").debug.assert;
 
-    var buf = []u8{0} ** 3;
+    comptime var small_buff = []u8{10} ** 3;
 
-    var n: i64 = 100;
+    comptime var small: u64 = 100;
 
     // Should only run the 2nd while-loop, which is kinda like a fixup loop.
-    _ = itoa_u64(n, buf[0..].ptr, 3);
+    comptime itoa_u64(small, &small_buff, small_buff.len);
     
+    
+    assert(small_buff[0] == 1 + 48);
+    assert(small_buff[1] == 0 + 48);
+    assert(small_buff[2] == 0 + 48);
 
-    assert(buf[0] == 1);
-    assert(buf[1] == 0);
-    assert(buf[2] == 0);
+    comptime var big_buff = []u8{0} ** 10;
 
-    // var buff = []u8{0} ** 10;
+    comptime var big: u64 = 1234123412;
 
-    // var n2: i64 = 1234567890;
+    comptime itoa_u64(big, &big_buff, big_buff.len);
 
-    // _ = itoa_u64(n, buff[0..].ptr, 10);
+    assert(big_buff[0] == 1 + 48);
+    assert(big_buff[1] == 2 + 48);
+    assert(big_buff[2] == 3 + 48);
+    assert(big_buff[3] == 4 + 48);
+    assert(big_buff[4] == 1 + 48);
+    assert(big_buff[5] == 2 + 48);
+    assert(big_buff[6] == 3 + 48);
+    assert(big_buff[7] == 4 + 48);
+    assert(big_buff[8] == 1 + 48);
+    assert(big_buff[9] == 2 + 48);
 }
