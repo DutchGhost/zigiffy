@@ -1,6 +1,15 @@
 const std = @import("std");
 const warn = std.debug.warn;
 
+fn pow(base: usize, exp: usize) usize {
+    var x: usize = base;
+    var i: usize = 0;
+    while (i < exp) : (i += 1) {
+        x *= exp;
+    }
+    return x;
+}
+
 export fn add(a: i32, b: i32) i32 {
     return a + b;
 }
@@ -12,48 +21,35 @@ export fn printing(buf: [*]const u8, len: usize) void {
 
 fn itoa(comptime N: type, n: N, buff: []u8) void {
     comptime var UNROLL_MAX: usize = 4;
+    comptime var DIV_CONST: usize = 10000; // <-- replace with 10 to the power of 4
 
     var num = n;
-    var len = buff.len;
+    var len = buff.len - 1;
 
-    var qs: [UNROLL_MAX]N = []N{0} ** UNROLL_MAX;
-    var partial_result: [UNROLL_MAX]u8 = []u8{0} ** UNROLL_MAX;
-    
-    while(len >= 4): ({len -= 4; num = @divTrunc(num, 10000);}) {
+    while(num >= DIV_CONST): ({num = @divTrunc(num, DIV_CONST);}) {
+        comptime var DIV10: N = 1;
+        comptime var CURRENT: usize = 0;
         
-        comptime var CURRENT: usize = 3;
-        
-        comptime var DIV_CONST: N = 1;
-        
-        inline while(CURRENT != @maxValue(usize)): ({CURRENT -%= 1; DIV_CONST *= 10;}) {
-            qs[CURRENT] = @divTrunc(num, DIV_CONST);
-
+        // Write digits backwards into the buffer
+        inline while(CURRENT != UNROLL_MAX): ({CURRENT += 1; DIV10 *= 10;}) {
+            var q = @divTrunc(num, DIV10);
+            var r = @intCast(u8, @rem(q, 10)) + 48;
+            buff[len - CURRENT] = r;
         }
 
-        CURRENT = 3;
-
-        inline while(CURRENT != @maxValue(usize)): ({CURRENT -%= 1;}) {
-            partial_result[CURRENT] = @intCast(u8, @rem(qs[CURRENT], 10)) + 48;
-        }
-
-        var slice = buff[len - 4..len];
-        @memcpy(slice.ptr, &partial_result, UNROLL_MAX);
+        len -= 4;
     }
-
-    len -= 1;
 
     while(len != @maxValue(usize)): ({len -%= 1;}) {
         var q: N = @divTrunc(num, 10);
-        
         var r: u8 = @intCast(u8, @rem(num, 10)) + 48;
-
         buff[len] = r;
-
         num = q;
     }
 }
 
 export fn itoa_u64(n: u64, noalias buff: [*] u8, len: usize) void {
+
     var slice = buff[0..len];
 
     itoa(u64, n, slice);
