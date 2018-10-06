@@ -1,0 +1,4 @@
+LIBRARY NtDll
+EXPORTS
+RtlCaptureStackBackTrace
+
