@@ -21,13 +21,15 @@ export fn printing(buf: [*]const u8, len: usize) callconv(.C) void {
 }
 
 fn itoa(comptime N: type, n: N, buff: []u8) void {
+    @setRuntimeSafety(false);
+
     comptime var UNROLL_MAX: usize = 4;
     comptime var DIV_CONST: usize = comptime pow(10, UNROLL_MAX);
 
     var num = n;
     var len = buff.len;
 
-    while (len >= UNROLL_MAX) : (num = @divTrunc(num, DIV_CONST)) {
+    while (len >= UNROLL_MAX) : (num = std.math.divTrunc(N, num, DIV_CONST) catch return) {
         comptime var DIV10: N = 1;
         comptime var CURRENT: usize = 0;
 
@@ -36,8 +38,8 @@ fn itoa(comptime N: type, n: N, buff: []u8) void {
             CURRENT += 1;
             DIV10 *= 10;
         }) {
-            var q = @divTrunc(num, DIV10);
-            var r = @intCast(u8, @rem(q, 10)) + 48;
+            var q = std.math.divTrunc(N, num, DIV10) catch break;
+            var r = @truncate(u8, std.math.mod(N, q, 10) catch break) + 48;
             buff[len - CURRENT - 1] = r;
         }
 
@@ -49,14 +51,15 @@ fn itoa(comptime N: type, n: N, buff: []u8) void {
 
     // Stops at 0xfffff
     while (len != std.math.maxInt(usize)) : (len -%= 1) {
-        var q: N = @divTrunc(num, 10);
-        var r: u8 = @intCast(u8, @rem(num, 10)) + 48;
+        var q: N = std.math.divTrunc(N, num, 10) catch break;
+        var r: u8 = @truncate(u8, std.math.mod(N, num, 10) catch break) + 48;
         buff[len] = r;
         num = q;
     }
 }
 
 export fn itoa_u64(n: u64, noalias buff: [*]u8, len: usize) callconv(.C) void {
+    @setRuntimeSafety(false);
     var slice = buff[0..len];
 
     itoa(u64, n, slice);

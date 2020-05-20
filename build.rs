@@ -27,6 +27,6 @@ fn main() {
     // On windows, link against ntdll
     #[cfg(target_os = "windows")]
     {
-        println!("cargo:rustc-link-lib={}={}", "static", "ntdll");
+        println!("cargo:rustc-link-lib={}={}", "dylib", "ntdll");
     }
 }
