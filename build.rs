@@ -4,22 +4,28 @@ use std::path::Path;
 use std::process::Command;
 
 fn main() {
+    let compiler = env::var("ZIG_COMPILER").expect("Failed to find compiler");
+    
     let dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let path = Path::new(&dir);
 
-    env::set_current_dir(path.join("zig"));
+    env::set_current_dir(path.join("zig/src")).unwrap();
 
-    let zig_compiler = path.parent().unwrap().join("zig-0.3").join("zig.exe");
-
-    let zig_compile = Command::new(zig_compiler.to_str().expect("Could not find zig compiler"))
-        .args(&["build-lib", "--release-fast", "hello.zig"])
+    Command::new(compiler)
+        .args(&[
+            "build-lib",
+            "-fPIC",
+            "zig.zig",
+            "-Drelease-fast",
+            "--bundle-compiler-rt",
+        ])
         .output()
-        .expect("Could not compile zig library");
+        .expect("Failed to compile Zig lib");
 
-    env::set_current_dir(path);
+    env::set_current_dir(path).unwrap();
 
     println!(
         "cargo:rustc-link-search=native={}",
-        Path::new(&dir).join("zig").display()
+        Path::new(&dir).join("zig/src/").display()
     );
 }

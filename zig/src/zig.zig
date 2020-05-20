@@ -1,6 +1,11 @@
 const std = @import("std");
 const warn = std.debug.warn;
 
+// pub fn panic(msg: []const u8, error_return_trace: ?*std.builtin.StackTrace) noreturn {
+//     // put whatever you want here
+//     while (true) {}
+// }
+
 fn pow(base: usize, exp: usize) usize {
     var x: usize = base;
     var i: usize = 1;
@@ -11,13 +16,13 @@ fn pow(base: usize, exp: usize) usize {
     return x;
 }
 
-export fn add(a: i32, b: i32) i32 {
+export fn add(a: i32, b: i32) callconv(.C) i32 {
     return a + b;
 }
 
-export fn printing(buf: [*]const u8, len: usize) void {
+export fn printing(buf: [*]const u8, len: usize) callconv(.C) void {
     var s = buf[0..len];
-    warn("Zig: {}\n", s);
+    warn("Zig: {}\n", .{s});
 }
 
 fn itoa(comptime N: type, n: N, buff: []u8) void {
@@ -45,7 +50,7 @@ fn itoa(comptime N: type, n: N, buff: []u8) void {
     len -%= 1;
 
     // Stops at 0xfffff
-    while(len != @maxValue(usize)): (len -%= 1) {
+    while(len != std.math.maxInt(usize)): (len -%= 1) {
         var q: N = @divTrunc(num, 10);
         var r: u8 = @intCast(u8, @rem(num, 10)) + 48;
         buff[len] = r;
@@ -53,7 +58,7 @@ fn itoa(comptime N: type, n: N, buff: []u8) void {
     }
 }
 
-export fn itoa_u64(n: u64, noalias buff: [*] u8, len: usize) void {
+export fn itoa_u64(n: u64, noalias buff: [*] u8, len: usize) callconv(.C) void {
 
     var slice = buff[0..len];
 
@@ -61,7 +66,7 @@ export fn itoa_u64(n: u64, noalias buff: [*] u8, len: usize) void {
 }
 
 test "empty buff" {
-    var small_buff: []u8 = []u8{};
+    var small_buff: []u8 = &[_]u8{};
     
     var small: u64 = 100;
 
@@ -72,39 +77,39 @@ test "small buff" {
     const assert = @import("std").debug.assert;
     const mem = @import("std").mem;
 
-    comptime var small_buff = []u8{10} ** 3;
+    comptime var small_buff = [_]u8{10} ** 3;
 
     comptime var small: u64 = 100;
 
     // Should only run the 2nd while-loop, which is kinda like a fixup loop.
     comptime itoa_u64(small, &small_buff, small_buff.len);
 
-    assert(mem.eql(u8, small_buff, "100"));
+    assert(mem.eql(u8, &small_buff, "100"));
 }
 
 test "big buff" {
     const assert = @import("std").debug.assert;
     const mem = @import("std").mem;
 
-    comptime var big_buff = []u8{0} ** 10;
+    comptime var big_buff = [_]u8{0} ** 10;
 
     comptime var big: u64 = 1234123412;
 
     comptime itoa_u64(big, &big_buff, big_buff.len);
 
-    assert(mem.eql(u8, big_buff, "1234123412"));
+    assert(mem.eql(u8, &big_buff, "1234123412"));
 }
 
 test "unroll count buf" {
     const assert = @import("std").debug.assert;
     const mem = @import("std").mem;
 
-    comptime var small_buff = []u8{10} ** 4;
+    comptime var small_buff = [_]u8{10} ** 4;
 
     comptime var small: u64 = 1000;
 
     // Should only run the 2nd while-loop, which is kinda like a fixup loop.
     comptime itoa_u64(small, &small_buff, small_buff.len);
 
-    assert(mem.eql(u8, small_buff, "1000"));
+    assert(mem.eql(u8, &small_buff, "1000"));
 }

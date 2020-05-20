@@ -13,4 +13,7 @@ Cargo.lock
 **/*.h
 **/*.lib
 **/*.pdb
+**/*.obj
+**/*.o
+**/*.a
 /zig/zig-cache/
