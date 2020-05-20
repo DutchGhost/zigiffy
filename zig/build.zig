@@ -1,8 +1,13 @@
-const Builder = @import("std").build.Builder;
+const std = @import("std");
+const Builder = std.build.Builder;
 
 pub fn build(b: *Builder) void {
     const mode = b.standardReleaseOptions();
     const lib = b.addStaticLibrary("zig", "src/zig.zig");
+
+    // Need these flags in order to compile
+    lib.bundle_compiler_rt = true;
+    lib.force_pic = true;
 
     lib.setBuildMode(mode);
     lib.install();
