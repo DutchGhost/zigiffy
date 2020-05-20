@@ -24,9 +24,9 @@ fn main() {
         Path::new(&dir).join("zig/zig-cache/lib").display()
     );
 
-    // On windows, link against ntdll
-    #[cfg(target_os = "windows")]
-    {
-        println!("cargo:rustc-link-lib={}={}", "dylib", "ntdll");
-    }
+    // // On windows, link against ntdll
+    // #[cfg(target_os = "windows")]
+    // {
+    //     println!("cargo:rustc-link-lib={}={}", "dylib", "ntdll");
+    // }
 }

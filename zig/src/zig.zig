@@ -1,5 +1,10 @@
 const std = @import("std");
+const builtin = @import("builtin");
 const warn = std.debug.warn;
+
+pub fn panic(msg: []const u8, error_return_trace: ?*builtin.StackTrace) noreturn {
+    std.os.exit(0xF);
+}
 
 fn pow(base: usize, exp: usize) usize {
     var x: usize = base;

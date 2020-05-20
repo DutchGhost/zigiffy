@@ -8,7 +8,9 @@ pub fn build(b: *Builder) void {
     // Need these flags in order to compile
     lib.bundle_compiler_rt = true;
     lib.force_pic = true;
-
+    lib.single_threaded = true;
+    lib.strip = true;
+    
     lib.setBuildMode(mode);
     lib.install();
 
