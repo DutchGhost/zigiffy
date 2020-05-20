@@ -3,7 +3,7 @@ const Builder = @import("std").build.Builder;
 pub fn build(b: *Builder) void {
     const mode = b.standardReleaseOptions();
     const lib = b.addStaticLibrary("zig", "src/zig.zig");
-    lib.linkSystemLibrary("User32");
+
     lib.setBuildMode(mode);
     lib.install();
 
@@ -12,6 +12,4 @@ pub fn build(b: *Builder) void {
 
     const test_step = b.step("test", "Run library tests");
     test_step.dependOn(&main_tests.step);
-
-   // const buildlib = b.step("build-lib", "build lib");
 }

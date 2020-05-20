@@ -5,7 +5,7 @@ use std::process::Command;
 
 fn main() {
     let compiler = env::var("ZIG_COMPILER").expect("Failed to find compiler");
-    
+
     let dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let path = Path::new(&dir);
 

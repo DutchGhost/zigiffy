@@ -1,9 +1,7 @@
 #[link(name = "zig", kind = "static")]
 extern "C" {
-    //    #[no_mangle]
     fn printing(buf: *const u8, len: usize);
 
-    //#[no_mangle]
     fn itoa_u64(n: u64, buf: *mut u8, len: usize);
 }
 
@@ -28,7 +26,7 @@ fn main() {
 
     print(&s);
 
-    let n: u64 = 123456;
+    let n: u64 = 123_456;
 
     let mut buff = vec![0; 6];
 
