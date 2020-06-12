@@ -4,7 +4,9 @@ Rust FFI with Zig
 This is a project grown out of curiosity in Rust and Zig. The idea is to make Rust interact with Zig code.
 This works, because both languages have the ability to make use of C FFI.
 
-The name 'zigiffy' is a combination of 'Zig' and 'FFI'.
+The name `zigiffy` is a combination of `Zig` and `FFI`.
+<br>
+The counterpart, `rustiffy` also exists: [rustiffy](https://github.com/DutchGhost/rustiffy)
 
 # Build
 This projects works in Windows under the WSL.
